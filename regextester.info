@@ -1,0 +1,5 @@
+name = Regextester
+description = A PHP regular expression tester module for Drupal
+core = 7.x
+
+stylesheets[all][] = regex.css

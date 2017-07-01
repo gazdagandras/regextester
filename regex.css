@@ -1,0 +1,22 @@
+ul.regex-message {
+    padding:2px;
+    border:1px solid;
+}
+
+#regex-status {
+    color            : #33A333;
+    background-color : #FFFFFF;
+    border-color     : #C7F2C8;
+}
+
+#regex-warning {
+    color            : #222200;
+    background-color : #FFFFDD;
+    border-color     : #F0C020;
+}
+
+#regex-error {
+    color            : #A30000;
+    background-color : #FFCCCC;
+    border-color     : #DD7777;
+}

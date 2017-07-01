@@ -1,0 +1,106 @@
+<?php
+
+/**
+ * @file
+ * Make a test page for PHP regular expression functions.
+ */
+
+define('REGEX_FUNCTIONS', array('preg_match', 'preg_match_all', 'preg_replace', 'preg_split', 'ereg', 'eregi',
+  'ereg_replace', 'eregi_replace', 'split', 'spliti', 'mb_ereg', 'mb_eregi', 'mb_ereg_replace', 'mb_eregi_replace',
+  'mb_split', 'javascript_exec' ));
+
+function regextester_menu() {
+  $items['regex'] = array(
+    'page callback' => 'regextester_regex_page',
+    'access arguments' => array('access content'),
+    'title' => 'RegEx tester',
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+  );
+  return $items;
+}
+
+function regextester_regex_page() {
+  $out = '';
+
+  $regex_form = drupal_get_form('regextester_regex_form');
+  $out .= drupal_render($regex_form);
+
+  $messages = drupal_get_messages();
+  if (isset($messages['status'])) {
+    $out .= theme_item_list(
+      array('items' => $messages['status'], 'title' => '', 'type' => 'ul',
+        'attributes' => array(
+          'id' => 'regex-status', 'class' => 'regex-message')));
+  }
+  if (isset($messages['warning'])) {
+    $out .= theme_item_list(
+      array('items' => $messages['warning'], 'title' => '', 'type' => 'ul', 'attributes' => array(
+        'id' => 'regex-warning', 'class' => 'regex-message')));
+  }
+
+  return $out;
+}
+
+function regextester_regex_form() {
+  $form = [];
+
+  $form['function'] = array(
+    '#type' => 'select',
+    '#title' => t('Function'),
+    '#required' => TRUE,
+    '#options' => drupal_map_assoc(REGEX_FUNCTIONS, function($element) {
+      return ($element === 'javascript_exec') ? 'JS - RegExp.exec()' : $element;
+    }),
+    '#default_value' => 'preg_match_all',
+    '#description' => 'Which function should be used to match the sample?',
+  );
+  $form['flags'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Flags'),
+    '#options' => array(
+      PREG_PATTERN_ORDER => 'PREG_PATTERN_ORDER',
+      PREG_SET_ORDER => 'PREG_SET_ORDER',
+      PREG_OFFSET_CAPTURE => 'PREG_OFFSET_CAPTURE'
+    ),
+    '#description' => 'It will influence the behaviour of the chosen function.',
+  );
+  $form['pattern'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Pattern'),
+    '#required' => TRUE,
+    '#rows' => 3,
+  );
+  $form['text'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Text'),
+    '#required' => TRUE,
+    '#rows' => 3,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Test'),
+  );
+
+  return $form;
+}
+
+function regextester_regex_form_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
+
+  $function = $form_state['values']['function'];
+  $pattern = $form_state['values']['pattern'];
+  $text = $form_state['values']['text'];
+  $flags = array_sum($form_state['values']['flags']);
+  $matches = array();
+
+  $result = $function($pattern, $text, $matches, $flags);
+  drupal_set_message(check_plain('$result data type = ' . gettype($result)), 'status');
+  drupal_set_message(check_plain('$result = ' . $result), 'status');
+  if ($result) {
+    drupal_set_message(check_plain('<pre>' . print_r($matches, TRUE) . '</pre>'), 'status');
+  }
+  else {
+    drupal_set_message(t('Pattern does not match'), 'warning');
+  }
+}
